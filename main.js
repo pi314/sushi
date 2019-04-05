@@ -1,9 +1,28 @@
-var SAMPLE_RATE = 5;
-var SUSHI_MAX = 60;
-var SUSHI_DIST = 50;
 
 
 $(function () {
+    var SUSHI_MAX = 50;
+    var SUSHI_DIST = 50;
+    var SUSHI_IDLE_SPEED = 1;
+
+    var param = window.location.search.replace(/^\?/g, '').split('&');
+    for (i in param) {
+        var tmp = param[i].split('=');
+        var key = tmp[0];
+        var val = tmp[1];
+
+        switch (key.toLowerCase()) {
+            case 'max':
+                SUSHI_MAX = parseInt(val);
+                break;
+            case 'dist':
+                SUSHI_DIST = parseInt(val);
+                break;
+            case 'speed':
+                SUSHI_IDLE_SPEED = parseInt(val);
+        }
+    }
+
     var sushi = [];
     var probex = [];
     var probey = [];
@@ -68,8 +87,10 @@ $(function () {
         probey.unshift(y);
 
         // auto move
-        trackx.unshift(x);
-        tracky.unshift(y);
+        for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
+            trackx.unshift(x);
+            tracky.unshift(y);
+        }
 
         for (var i = sushi.length; i < trackx.length / SUSHI_DIST && i < SUSHI_MAX; i++) {
             var new_sushi = $('<div class="sushi" style="z-index: '+ (SUSHI_MAX - sushi.length) +';">🍣</div>');
