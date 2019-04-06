@@ -7,3 +7,8 @@ body {
     position: fixed;
     font-size: 50px;
 }
+
+
+.hidden {
+    visibility: hidden;
+}

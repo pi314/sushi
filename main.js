@@ -1,4 +1,12 @@
+function coord (x, y) {
+    this.x = x;
+    this.y = y;
+}
 
+var animate_loop_id = undefined;
+
+var track_sushi = [];
+var track_mouse = [];
 
 $(function () {
     var SUSHI_MAX = 50;
@@ -41,107 +49,119 @@ $(function () {
     console.log('SUSHI_DIST =', SUSHI_DIST);
     console.log('SUSHI_IDLE_SPEED =', SUSHI_IDLE_SPEED);
     console.log('SUSHI_BG =', SUSHI_BG);
-    console.log('SUSHI_SEQ =', SUSHI_SEQ);
+    console.log('SUSHI_SEQ =', SUSHI_SEQ.join(', '));
 
-    var sushi = [];
-    var probex = [];
-    var probey = [];
-    var trackx = [];
-    var tracky = [];
-    var mousex = undefined;
-    var mousey = undefined;
-    var x = undefined;
-    var y = undefined;
+    var suchi_dom = [];
+    var mouse = undefined;
+    var probe = undefined;
 
     $('body').css('background', SUSHI_BG);
 
     $(window).mousemove(function (e) {
-        mousex = e.clientX;
-        mousey = e.clientY;
+        if (mouse === undefined) {
+            mouse = new coord(e.clientX, e.clientY);
+        } else {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        }
+    }).keydown(function () {
+        if (animate_loop_id) {
+            clearInterval(animate_loop_id);
+            animate_loop_id = undefined;
+        } else {
+            animate_loop_id = setInterval(move, 50);
+        }
     });
 
-    function move () {
-        if (mousex === undefined) {
-            return;
-        } else if (x === undefined) {
-            x = mousex;
-            y = mousey;
-        } else {
-            x = lerp(x, mousex, 0.2);
-            y = lerp(y, mousey, 0.2);
-        }
+    for (var i = 0; i < SUSHI_MAX; i++) {
+        var new_sushi = $('<div class="sushi hidden" style="z-index: '+ (SUSHI_MAX - i) +';">'+ SUSHI_SEQ[suchi_dom.length % SUSHI_SEQ.length] +'</div>');
+        suchi_dom.push(new_sushi);
+        $('#content').append(new_sushi);
+    }
 
-        if (probex.length == 1) {
-            var d = Math.round(dist(probex[0], probey[0], x, y));
-            var p0x = probex[0];
-            var p0y = probey[0];
-            for (var t = 1; t < d; t++) {
-                var f = t / d;
-                trackx.unshift(lerp(p0x, p0y, f));
-                tracky.unshift(lerp(p0x, p0y, f));
+    function move () {
+        if (mouse === undefined) {
+            return;
+
+        } else if (probe === undefined) {
+            probe = new coord(mouse.x, mouse.y);
+
+            for (var i = 0; i < SUSHI_MAX; i++) {
+                suchi_dom[i].css({
+                    'top': probe.y - suchi_dom[i].height() / 2,
+                    'left': probe.x - suchi_dom[i].width() / 2,
+                });
             }
 
-        } else if (probex.length >= 2) {
+        } else {
+            probe = lerp_coord(probe, mouse, 0.2)
+        }
+
+        if (track_mouse.length == 1) {
+            var d = Math.round(dist(track_mouse[0], probe));
+            var p0 = track_mouse[0];
+            var p1 = probe;
+            for (var t = 1; t < d; t++) {
+                var f = t / d;
+                var nc = lerp_coord(p0, p1, f);
+                track_sushi.unshift(nc);
+            }
+
+        } else if (track_mouse.length >= 2) {
             // Bézier curve
-            var d = Math.round(dist(probex[0], probey[0], x, y) + dist(probex[1], probey[1], probex[0], probey[0]));
-            var p0x = probex[1];
-            var p0y = probey[1];
-            var p2x = x;
-            var p2y = y;
-            var mx = (p0x + x) / 2;
-            var my = (p0y + y) / 2;
-            var p1x = (probex[0] - mx) * 2 + mx;
-            var p1y = (probey[0] - my) * 2 + my;
+            var d = Math.round(dist(track_mouse[0], probe) + dist(track_mouse[1], track_mouse[0]));
+            var p0 = track_mouse[1];
+            var p2 = probe;
+            var mx = (p0.x + probe.x) / 2;
+            var my = (p0.y + probe.y) / 2;
+            var p1 = new coord((track_mouse[0].x - mx) * 2 + mx, (track_mouse[0].y - my) * 2 + my);
 
             for (var t = d / 2; t < d; t++) {
                 var f = t / d;
-                var q0x = lerp(p0x, p1x, f);
-                var q1x = lerp(p1x, p2x, f);
-                trackx.unshift(lerp(q0x, q1x, f));
-
-                var q0y = lerp(p0y, p1y, f);
-                var q1y = lerp(p1y, p2y, f);
-                tracky.unshift(lerp(q0y, q1y, f));
+                var q0 = lerp_coord(p0, p1, f);
+                var q1 = lerp_coord(p1, p2, f);
+                track_sushi.unshift(lerp_coord(q0, q1, f));
             }
         }
 
-        probex.unshift(x);
-        probey.unshift(y);
+        track_mouse.unshift(new coord(probe.x, probe.y));
 
         // auto move
         for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
-            trackx.unshift(x);
-            tracky.unshift(y);
+            track_sushi.unshift(new coord(probe.x, probe.y));
         }
 
-        for (var i = sushi.length; i < trackx.length / SUSHI_DIST && i < SUSHI_MAX; i++) {
-            var new_sushi = $('<div class="sushi" style="z-index: '+ (SUSHI_MAX - sushi.length) +';">'+ SUSHI_SEQ[sushi.length % SUSHI_SEQ.length] +'</div>');
-            sushi.push(new_sushi);
-            $('#content').append(new_sushi);
-        }
+        for (var i in suchi_dom) {
+            if ((i * SUSHI_DIST) >= track_sushi.length) {
+                continue;
+            }
 
-        for (var i = 0; i < sushi.length; i++) {
-            sushi[i].css({
-                'top': tracky[i * SUSHI_DIST] - sushi[i].height() / 2,
-                'left': trackx[i * SUSHI_DIST] - sushi[i].width() / 2,
+            suchi_dom[i].removeClass('hidden');
+
+            suchi_dom[i].css({
+                'top': track_sushi[i * SUSHI_DIST].y - suchi_dom[i].height() / 2,
+                'left': track_sushi[i * SUSHI_DIST].x - suchi_dom[i].width() / 2,
             });
         }
 
-        trackx = trackx.slice(0, SUSHI_MAX * SUSHI_DIST + 1);
-        tracky = tracky.slice(0, SUSHI_MAX * SUSHI_DIST + 1);
-        probex = probex.slice(0, SUSHI_MAX + 1);
-        probey = probey.slice(0, SUSHI_MAX + 1);
+        track_sushi = track_sushi.slice(0, SUSHI_MAX * SUSHI_DIST + 1);
+        track_mouse = track_mouse.slice(0, SUSHI_MAX + 1);
     }
 
-    setInterval(move, 50);
+    animate_loop_id = setInterval(move, 50);
 });
 
 
-function dist (x1, y1, x2, y2) {
-    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+function dist (c1, c2) {
+    return Math.sqrt((c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y))
 }
 
 
 function lerp (a, b, f) {
     return a * (1 - f) + b * f;
+}
+
+
+function lerp_coord (a, b, f) {
+    return new coord(lerp(a.x, b.x, f), lerp(a.y, b.y, f));
 }

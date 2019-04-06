@@ -13,4 +13,6 @@ Some paramters can be assigned from URL:
 
 Example: https://pi314.github.io/sushi/?max=50&dist=50speed=1&bg=dimgray&sushi=🍣🍤🍥🍢🍘🍙🍱
 
+Press any key to stop/restart sushi flow.
+
 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣
