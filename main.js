@@ -15,6 +15,10 @@ $(function () {
     var SUSHI_BG = 'black';
     var SUSHI_SEQ = ['🍣'];
 
+    if (/fbclid=[^&]+/.test(window.location.href)) {
+        history.replaceState(null, '', window.location.href.replace(/&fbclid=[^&]+/, ''));
+    }
+
     var param = window.location.search.replace(/^\?/g, '').split('&');
     for (i in param) {
         var tmp = param[i].split('=');
