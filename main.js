@@ -20,6 +20,10 @@ $(function () {
                 break;
             case 'speed':
                 SUSHI_IDLE_SPEED = parseInt(val);
+                break;
+            case 'bg':
+                $('body').css('background', val);
+                break;
         }
     }
 
