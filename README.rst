@@ -9,7 +9,8 @@ Some paramters can be assigned from URL:
 * ``dist``: the distance between sushi
 * ``speed``: The sushi-moving-speed when your mouse stay still
 * ``bg``: background color
+* ``sushi``: 
 
-Example: https://pi314.github.io/sushi/?max=50&dist=50speed=1
+Example: https://pi314.github.io/sushi/?max=50&dist=50speed=1&bg=dimgray&sushi=🍣🍤🍥🍢🍘🍙🍱
 
-🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣🍣
+🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣 🍣

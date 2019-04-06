@@ -4,6 +4,8 @@ $(function () {
     var SUSHI_MAX = 50;
     var SUSHI_DIST = 50;
     var SUSHI_IDLE_SPEED = 1;
+    var SUSHI_BG = 'black';
+    var SUSHI_SEQ = ['🍣'];
 
     var param = window.location.search.replace(/^\?/g, '').split('&');
     for (i in param) {
@@ -22,10 +24,24 @@ $(function () {
                 SUSHI_IDLE_SPEED = parseInt(val);
                 break;
             case 'bg':
-                $('body').css('background', val);
+                SUSHI_BG = val;
+                break;
+            case 'sushi':
+                if (val) {
+                    SUSHI_SEQ = [];
+                    for (c of decodeURI(val)) {
+                        SUSHI_SEQ.push(c);
+                    }
+                }
                 break;
         }
     }
+
+    console.log('SUSHI_MAX =', SUSHI_MAX);
+    console.log('SUSHI_DIST =', SUSHI_DIST);
+    console.log('SUSHI_IDLE_SPEED =', SUSHI_IDLE_SPEED);
+    console.log('SUSHI_BG =', SUSHI_BG);
+    console.log('SUSHI_SEQ =', SUSHI_SEQ);
 
     var sushi = [];
     var probex = [];
@@ -36,6 +52,8 @@ $(function () {
     var mousey = undefined;
     var x = undefined;
     var y = undefined;
+
+    $('body').css('background', SUSHI_BG);
 
     $(window).mousemove(function (e) {
         mousex = e.clientX;
@@ -97,7 +115,7 @@ $(function () {
         }
 
         for (var i = sushi.length; i < trackx.length / SUSHI_DIST && i < SUSHI_MAX; i++) {
-            var new_sushi = $('<div class="sushi" style="z-index: '+ (SUSHI_MAX - sushi.length) +';">🍣</div>');
+            var new_sushi = $('<div class="sushi" style="z-index: '+ (SUSHI_MAX - sushi.length) +';">'+ SUSHI_SEQ[sushi.length % SUSHI_SEQ.length] +'</div>');
             sushi.push(new_sushi);
             $('#content').append(new_sushi);
         }
