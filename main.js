@@ -16,7 +16,7 @@ $(function () {
     var SUSHI_SEQ = ['🍣'];
 
     if (/fbclid=[^&]+/.test(window.location.href)) {
-        history.replaceState(null, '', window.location.href.replace(/&fbclid=[^&]+/, ''));
+        history.replaceState(null, '', window.location.href.replace(/[&?]fbclid=[^&]+/, ''));
     }
 
     var param = window.location.search.replace(/^\?/g, '').split('&');
