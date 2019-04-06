@@ -15,10 +15,6 @@ $(function () {
     var SUSHI_BG = 'black';
     var SUSHI_SEQ = ['🍣'];
 
-    if (/fbclid=[^&]+/.test(window.location.href)) {
-        history.replaceState(null, '', window.location.href.replace(/[&?]fbclid=[^&]+/, ''));
-    }
-
     var param = window.location.search.replace(/^\?/g, '').split('&');
     for (i in param) {
         var tmp = param[i].split('=');
@@ -168,4 +164,9 @@ function lerp (a, b, f) {
 
 function lerp_coord (a, b, f) {
     return new coord(lerp(a.x, b.x, f), lerp(a.y, b.y, f));
+}
+
+
+if (/fbclid=[^&]+/.test(window.location.href)) {
+    history.replaceState(null, '', window.location.href.replace(/[&?]fbclid=[^&#]+/, ''));
 }
