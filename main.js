@@ -12,8 +12,9 @@ $(function () {
     var SUSHI_MAX = 50;
     var SUSHI_DIST = 50;
     var SUSHI_IDLE_SPEED = 1;
-    var SUSHI_BG = 'black';
+    var SUSHI_BG = 'pink';
     var SUSHI_SEQ = ['🍣'];
+    var SUSHI_FONT = 'default';
 
     var param = window.location.search.replace(/^\?/g, '').split('&');
     for (i in param) {
@@ -42,6 +43,9 @@ $(function () {
                     }
                 }
                 break;
+            case 'font':
+                SUSHI_FONT = val;
+                break;
         }
     }
 
@@ -50,8 +54,18 @@ $(function () {
     console.log('SUSHI_IDLE_SPEED =', SUSHI_IDLE_SPEED);
     console.log('SUSHI_BG =', SUSHI_BG);
     console.log('SUSHI_SEQ =', SUSHI_SEQ.join(', '));
+    console.log('SUSHI_FONT =', SUSHI_FONT);
 
-    var suchi_dom = [];
+    var SUSHI_ICON = [];
+    for (var i in SUSHI_SEQ) {
+        if (SUSHI_FONT == 'twemoji' || SUSHI_FONT == 'twitter') {
+            SUSHI_ICON.push(twemoji.parse(SUSHI_SEQ[i]));
+        } else {
+            SUSHI_ICON.push(SUSHI_SEQ[i]);
+        }
+    }
+
+    var sushi_dom = [];
     var mouse = undefined;
     var probe = undefined;
 
@@ -74,8 +88,8 @@ $(function () {
     });
 
     for (var i = 0; i < SUSHI_MAX; i++) {
-        var new_sushi = $('<div class="sushi hidden" style="z-index: '+ (SUSHI_MAX - i) +';">'+ SUSHI_SEQ[suchi_dom.length % SUSHI_SEQ.length] +'</div>');
-        suchi_dom.push(new_sushi);
+        var new_sushi = $('<div class="sushi hidden" style="z-index: '+ (SUSHI_MAX - i) +';">'+ SUSHI_ICON[sushi_dom.length % SUSHI_ICON.length] +'</div>');
+        sushi_dom.push(new_sushi);
         $('#content').append(new_sushi);
     }
 
@@ -87,9 +101,9 @@ $(function () {
             probe = new coord(mouse.x, mouse.y);
 
             for (var i = 0; i < SUSHI_MAX; i++) {
-                suchi_dom[i].css({
-                    'top': probe.y - suchi_dom[i].height() / 2,
-                    'left': probe.x - suchi_dom[i].width() / 2,
+                sushi_dom[i].css({
+                    'top': probe.y - sushi_dom[i].height() / 2,
+                    'left': probe.x - sushi_dom[i].width() / 2,
                 });
             }
 
@@ -131,16 +145,16 @@ $(function () {
             track_sushi.unshift(new coord(probe.x, probe.y));
         }
 
-        for (var i in suchi_dom) {
+        for (var i in sushi_dom) {
             if ((i * SUSHI_DIST) >= track_sushi.length) {
                 continue;
             }
 
-            suchi_dom[i].removeClass('hidden');
+            sushi_dom[i].removeClass('hidden');
 
-            suchi_dom[i].css({
-                'top': track_sushi[i * SUSHI_DIST].y - suchi_dom[i].height() / 2,
-                'left': track_sushi[i * SUSHI_DIST].x - suchi_dom[i].width() / 2,
+            sushi_dom[i].css({
+                'top': track_sushi[i * SUSHI_DIST].y - sushi_dom[i].height() / 2,
+                'left': track_sushi[i * SUSHI_DIST].x - sushi_dom[i].width() / 2,
             });
         }
 
