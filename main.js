@@ -78,12 +78,18 @@ $(function () {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
         }
-    }).keydown(function () {
-        if (animate_loop_id) {
-            clearInterval(animate_loop_id);
-            animate_loop_id = undefined;
-        } else {
-            animate_loop_id = setInterval(move, 50);
+    }).keydown(function (e) {
+        switch (e.which) {
+            case 32:
+                if (animate_loop_id) {
+                    clearInterval(animate_loop_id);
+                    animate_loop_id = undefined;
+                } else {
+                    animate_loop_id = setInterval(move, 50);
+                }
+                break;
+            default:
+                console.log(e.which);
         }
     });
 
