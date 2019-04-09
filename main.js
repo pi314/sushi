@@ -121,32 +121,25 @@ $(function () {
             probe = lerp_coord(probe, mouse, 0.2);
         }
 
+        var curve = []
         if (track_mouse.length == 1) {
-            var curve = bezier_curve_1st(track_mouse[0], probe);
-            if (curve.length == 0) {
-                for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
-                    track_sushi.unshift(probe);
-                }
-            } else {
-                track_sushi = curve.concat(track_sushi);
-            }
+            curve = bezier_curve_1st(track_mouse[0], probe);
 
         } else if (track_mouse.length >= 2) {
-            var d = Math.round(dist(track_mouse[0], probe) + dist(track_mouse[1], track_mouse[0]));
             var p0 = track_mouse[1];
             var p2 = probe;
             var mx = (p0.x + probe.x) / 2;
             var my = (p0.y + probe.y) / 2;
             var p1 = new coord((track_mouse[0].x - mx) * 2 + mx, (track_mouse[0].y - my) * 2 + my);
-            var curve = bezier_curve_1st(track_mouse[0], probe);
+            curve = bezier_curve_2nd(p0, p1, p2);
+        }
 
-            if (curve.length == 0) {
-                for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
-                    track_sushi.unshift(probe);
-                }
-            } else {
-                track_sushi = curve.concat(track_sushi);
+        if (curve.length == 0) {
+            for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
+                track_sushi.unshift(probe);
             }
+        } else {
+            track_sushi = curve.concat(track_sushi);
         }
 
         track_mouse.unshift(new coord(probe.x, probe.y));
@@ -203,8 +196,10 @@ function bezier_curve_1st (p0, p1) {
 }
 
 
-function bezier_curve_2nd (p0, p1, p2, d) {
-    // Bézier curve
+function bezier_curve_2nd (p0, p1, p2) {
+    // Estimate curve length
+    var d = Math.round((dist(p0, p1) + dist(p1, p2) + dist(p0, p2)) / 2);
+
     if (d <= 1) {
         return [];
     } else {
