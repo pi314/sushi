@@ -71,6 +71,12 @@ $(function () {
 
     $('body').css('background', SUSHI_BG);
 
+    for (var i = 0; i < SUSHI_MAX; i++) {
+        var new_sushi = $('<div class="sushi hidden" style="z-index: '+ (SUSHI_MAX - i) +';">'+ SUSHI_ICON[sushi_dom.length % SUSHI_ICON.length] +'</div>');
+        sushi_dom.push(new_sushi);
+        $('#content').append(new_sushi);
+    }
+
     $(window).mousemove(function (e) {
         if (mouse === undefined) {
             mouse = new coord(e.clientX, e.clientY);
@@ -79,25 +85,23 @@ $(function () {
             mouse.y = e.clientY;
         }
     }).keydown(function (e) {
+        console.log(e.which);
         switch (e.which) {
             case 32:
                 if (animate_loop_id) {
+                    console.log('pause');
                     clearInterval(animate_loop_id);
                     animate_loop_id = undefined;
                 } else {
+                    console.log('start');
                     animate_loop_id = setInterval(move, 50);
                 }
                 break;
+
             default:
-                console.log(e.which);
+                console.log('No handler');
         }
     });
-
-    for (var i = 0; i < SUSHI_MAX; i++) {
-        var new_sushi = $('<div class="sushi hidden" style="z-index: '+ (SUSHI_MAX - i) +';">'+ SUSHI_ICON[sushi_dom.length % SUSHI_ICON.length] +'</div>');
-        sushi_dom.push(new_sushi);
-        $('#content').append(new_sushi);
-    }
 
     function move () {
         if (mouse === undefined) {
@@ -114,42 +118,38 @@ $(function () {
             }
 
         } else {
-            probe = lerp_coord(probe, mouse, 0.2)
+            probe = lerp_coord(probe, mouse, 0.2);
         }
 
         if (track_mouse.length == 1) {
-            var d = Math.round(dist(track_mouse[0], probe));
-            var p0 = track_mouse[0];
-            var p1 = probe;
-            for (var t = 1; t < d; t++) {
-                var f = t / d;
-                var nc = lerp_coord(p0, p1, f);
-                track_sushi.unshift(nc);
+            var curve = bezier_curve_1st(track_mouse[0], probe);
+            if (curve.length == 0) {
+                for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
+                    track_sushi.unshift(probe);
+                }
+            } else {
+                track_sushi = curve.concat(track_sushi);
             }
 
         } else if (track_mouse.length >= 2) {
-            // Bézier curve
             var d = Math.round(dist(track_mouse[0], probe) + dist(track_mouse[1], track_mouse[0]));
             var p0 = track_mouse[1];
             var p2 = probe;
             var mx = (p0.x + probe.x) / 2;
             var my = (p0.y + probe.y) / 2;
             var p1 = new coord((track_mouse[0].x - mx) * 2 + mx, (track_mouse[0].y - my) * 2 + my);
+            var curve = bezier_curve_1st(track_mouse[0], probe);
 
-            for (var t = d / 2; t < d; t++) {
-                var f = t / d;
-                var q0 = lerp_coord(p0, p1, f);
-                var q1 = lerp_coord(p1, p2, f);
-                track_sushi.unshift(lerp_coord(q0, q1, f));
+            if (curve.length == 0) {
+                for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
+                    track_sushi.unshift(probe);
+                }
+            } else {
+                track_sushi = curve.concat(track_sushi);
             }
         }
 
         track_mouse.unshift(new coord(probe.x, probe.y));
-
-        // auto move
-        for (var i = 0; i < SUSHI_IDLE_SPEED; i++) {
-            track_sushi.unshift(new coord(probe.x, probe.y));
-        }
 
         for (var i in sushi_dom) {
             if ((i * SUSHI_DIST) >= track_sushi.length) {
@@ -165,7 +165,7 @@ $(function () {
         }
 
         track_sushi = track_sushi.slice(0, SUSHI_MAX * SUSHI_DIST + 1);
-        track_mouse = track_mouse.slice(0, SUSHI_MAX + 1);
+        track_mouse = track_mouse.slice(0, 5);
     }
 
     animate_loop_id = setInterval(move, 50);
@@ -173,7 +173,7 @@ $(function () {
 
 
 function dist (c1, c2) {
-    return Math.sqrt((c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y))
+    return Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
 }
 
 
@@ -184,6 +184,39 @@ function lerp (a, b, f) {
 
 function lerp_coord (a, b, f) {
     return new coord(lerp(a.x, b.x, f), lerp(a.y, b.y, f));
+}
+
+
+function bezier_curve_1st (p0, p1) {
+    var d = Math.round(dist(p0, p1));
+    if (d <= 1) {
+        return [];
+    } else {
+        var ret = [];
+        for (var t = 1; t < d; t++) {
+            var f = t / d;
+            var nc = lerp_coord(p0, p1, f);
+            ret.unshift(nc);
+        }
+    }
+    return ret;
+}
+
+
+function bezier_curve_2nd (p0, p1, p2, d) {
+    // Bézier curve
+    if (d <= 1) {
+        return [];
+    } else {
+        var ret = [];
+        for (var t = d / 2; t < d; t++) {
+            var f = t / d;
+            var q0 = lerp_coord(p0, p1, f);
+            var q1 = lerp_coord(p1, p2, f);
+            ret.unshift(lerp_coord(q0, q1, f));
+        }
+        return ret;
+    }
 }
 
 
